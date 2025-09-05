@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Base de datos
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: banco_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+    
+
+  # Servicio de RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "5672:5672"   # Puerto para conexión AMQP
+      - "15672:15672" # Puerto para la interfaz de administración
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+  
+  # Microservicio 1 (Cliente/Persona)
+  cliente-servicio:
+    build: ./microservicioclientes
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/banco_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
+  # Microservicio 2 (Cuenta/Movimientos)
+  cuenta-servicio:
+    build: ./microserviciomovimientos
+    depends_on:
+      - db
+      - rabbitmq
+      - cliente-servicio
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/banco_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+  
+volumes:
+  postgres_data:
+  rabbitmq_data:
