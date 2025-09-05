@@ -109,7 +109,6 @@ Content-Type: application/json
   "identificacion": "123456",
   "direccion": "Av. Principal 123",
   "telefono": "0999999999",
-  "contrasena": "1234",
   "estado": true
 }
 ```
