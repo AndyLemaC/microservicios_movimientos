@@ -25,6 +25,7 @@ class MovimientoFlowIntegrationTest {
     @Autowired
     ObjectMapper mapper;
 
+
     @Test
     void retiroSinSaldoDebeFallar_conMensajeSaldoNoDisponible() throws Exception {
         // 1) Crear cuenta con saldo 100
